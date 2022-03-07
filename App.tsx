@@ -1,98 +1,67 @@
-import React, {useCallback} from 'react';
-import {Text, TouchableHighlight, View, Pressable} from 'react-native';
+import React, {useState} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import Orders from './src/pages/Orders';
+import Delivery from './src/pages/Delivery';
+import Settings from './src/pages/Settings';
+import SignIn from './src/pages/SignIn';
+import SignUp from './src/pages/SignUp';
 
-import {NavigationContainer, ParamListBase} from '@react-navigation/native';
-import {
-  createNativeStackNavigator,
-  NativeStackScreenProps,
-} from '@react-navigation/native-stack';
+//NOTE: LogggedIn과 RootStack을 나눈 이유는 각각의 성질이 다르기 떄문에(로그인과 비로그인)
 
+export type LoggedInParamList = {
+  Orders: undefined;
+  Settings: undefined; //NOTE: 정산화면
+  Delivery: undefined; //NOTE: 배달(지도화면)
+  Complete: {orderId: string}; //NOTE: parameter칸(무엇을 완료하였는지에 대한 정보)
+};
+
+export type RootStackParamList = {
+  SignIn: undefined;
+  SignUp: undefined;
+};
+
+const Tab = createBottomTabNavigator();
 // NOTE Stack을 부르는것은 그냥 외우자
 const Stack = createNativeStackNavigator();
 
-type RootStackParamList = {
-  Home: undefined;
-  Details: undefined;
-};
-
-// NOTE: 해당 type은 react-navigation에서 참조하면 된다.
-type HomeScreenProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
-type DetailsScreenProps = NativeStackScreenProps<ParamListBase, 'Details'>;
-
-function HomeScreen({navigation}: HomeScreenProps) {
-  const onClick = useCallback(() => {
-    //NOTE: 페이지를 이동시키는 역할로 navigate메서드 인자는 screen의 네임과 동일시 이동합니다.
-    navigation.navigate('Details');
-  }, [navigation]);
-
-  const goDetail = useCallback(() => {
-    navigation.navigate('Details');
-  }, [navigation]);
-
-  return (
-    <>
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: 'yellow',
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-        }}>
-        <Pressable
-          onPress={onClick}
-          style={{
-            paddingVertical: 20,
-            paddingHorizontal: 20,
-            backgroundColor: 'red',
-          }}>
-          <Text style={{color: 'white'}}>Home Screen</Text>
-        </Pressable>
-      </View>
-      <View
-        style={{
-          flex: 5,
-          backgroundColor: 'blue',
-          alignItems: 'flex-start',
-          justifyContent: 'center',
-        }}>
-        <Pressable onPress={goDetail}>
-          <Text>Two Screen</Text>
-        </Pressable>
-      </View>
-    </>
-  );
-}
-
-function DetailsScreen({navigation}: DetailsScreenProps) {
-  const onClick = useCallback(() => {
-    navigation.navigate('Home');
-  }, [navigation]);
-
-  return (
-    <>
-      <View style={{flex: 1, alignItems: 'center', justifyContent: 'center'}}>
-        <TouchableHighlight onPress={onClick}>
-          <Text>Details Screen</Text>
-        </TouchableHighlight>
-      </View>
-    </>
-  );
-}
-
 const App = () => {
+  const [isLoggedIn, setLoggedIn] = useState(false);
   return (
     <NavigationContainer>
-      {/* NOTE Navigator가 screen을 그룹으로 묶어준다. (page의 묶음) */}
-      <Stack.Navigator initialRouteName="Home">
-        {/* NOTE screen은 화면(page)이라고 보면 된다. */}
-        {/* NOTE: 해당 Screen이 해당 컴포넌트에 props로 navigation과route를 자동으로 전달합니다. */}
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{title: '홈화면'}}
-        />
-        <Stack.Screen name="Details" component={DetailsScreen} />
-      </Stack.Navigator>
+      {isLoggedIn && isLoggedIn ? (
+        <Tab.Navigator>
+          <Tab.Screen
+            name="Orders"
+            component={Orders}
+            options={{title: '주문 목록'}}
+          />
+          <Tab.Screen
+            name="Delivery"
+            component={Delivery}
+            options={{headerShown: false}}
+          />
+          <Tab.Screen
+            name="Settings"
+            component={Settings}
+            options={{title: '설정'}}
+          />
+        </Tab.Navigator>
+      ) : (
+        <Stack.Navigator>
+          <Stack.Screen
+            name="SignIn"
+            component={SignIn}
+            options={{title: '로그인'}}
+          />
+          <Stack.Screen
+            name="SignUp"
+            component={SignUp}
+            options={{title: '회원가입'}}
+          />
+        </Stack.Navigator>
+      )}
     </NavigationContainer>
   );
 };
