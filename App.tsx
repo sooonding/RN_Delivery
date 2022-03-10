@@ -1,12 +1,7 @@
-import React, {useState} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
-import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import Orders from './src/pages/Orders';
-import Delivery from './src/pages/Delivery';
-import Settings from './src/pages/Settings';
-import SignIn from './src/pages/SignIn';
-import SignUp from './src/pages/SignUp';
+import React from 'react';
+import {Provider} from 'react-redux';
+import {store} from './src/store';
+import AppInner from './AppInner';
 
 //NOTE: LogggedIn과 RootStack을 나눈 이유는 각각의 성질이 다르기 떄문에(로그인과 비로그인)
 
@@ -22,47 +17,11 @@ export type RootStackParamList = {
   SignUp: undefined;
 };
 
-const Tab = createBottomTabNavigator();
-// NOTE Stack을 부르는것은 그냥 외우자
-const Stack = createNativeStackNavigator();
-
 const App = () => {
-  const [isLoggedIn, setLoggedIn] = useState(false);
   return (
-    <NavigationContainer>
-      {isLoggedIn && isLoggedIn ? (
-        <Tab.Navigator>
-          <Tab.Screen
-            name="Orders"
-            component={Orders}
-            options={{title: '주문 목록'}}
-          />
-          <Tab.Screen
-            name="Delivery"
-            component={Delivery}
-            options={{headerShown: false}}
-          />
-          <Tab.Screen
-            name="Settings"
-            component={Settings}
-            options={{title: '설정'}}
-          />
-        </Tab.Navigator>
-      ) : (
-        <Stack.Navigator>
-          <Stack.Screen
-            name="SignIn"
-            component={SignIn}
-            options={{title: '로그인'}}
-          />
-          <Stack.Screen
-            name="SignUp"
-            component={SignUp}
-            options={{title: '회원가입'}}
-          />
-        </Stack.Navigator>
-      )}
-    </NavigationContainer>
+    <Provider store={store}>
+      <AppInner />
+    </Provider>
   );
 };
 
