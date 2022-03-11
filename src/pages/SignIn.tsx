@@ -5,10 +5,17 @@ import {
   Pressable,
   Alert,
   StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
 import React, {useCallback, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {RootStackParamList} from '../../App';
+import axios, {AxiosError} from 'axios';
+import Config from 'react-native-config';
+
+import userSlice from '../slices/user';
+import {useAppDispatch} from '../store';
+import EncryptedStorage from 'react-native-encrypted-storage';
 
 //ANCHOR: page이동과 type 지정을 위한 로직
 type SignInProps = NativeStackScreenProps<RootStackParamList, 'SignUp'>;
@@ -17,6 +24,9 @@ export default function SignIn({navigation}: SignInProps) {
     email: '',
     password: '',
   });
+
+  const dispatch = useAppDispatch();
+  const [loading, setLoading] = useState(false);
   const {email, password} = inputText;
   const canGoNext = email && password;
 
@@ -25,7 +35,11 @@ export default function SignIn({navigation}: SignInProps) {
   const passwordRef = useRef<TextInput | null>(null);
 
   //ANCHOR: 로그인 로직
-  const onSubmit = useCallback(() => {
+  const onSubmit = useCallback(async () => {
+    if (loading) {
+      return;
+    }
+    console.log('login Logic start!');
     const pattern = /\s/g; //NOTE: 공백 체크 정규표현식 - 탭, 스페이스
 
     //NOTE: 확인을 할 때는 항상 검증 로직을 추가하자
@@ -35,11 +49,37 @@ export default function SignIn({navigation}: SignInProps) {
     if (!password || !password.trim()) {
       return Alert.alert('경고!', '비밀번호를 입력하세요!');
     }
-    Alert.alert('hello', 'message');
-  }, [email, password]);
+    try {
+      console.log(email, password);
+      setLoading(true);
+      const response = await axios.post(`${Config.API_URL}/login`, {
+        email,
+        password,
+      });
+      console.log(response.data, 'RESPONSE_DATA');
+      Alert.alert('로그인', '로그인 되었습니다.');
+      dispatch(
+        userSlice.actions.setUser({
+          name: response.data.data.name,
+          email: response.data.data.email,
+          accessToken: response.data.data.accessToken, //NOTE 유효기간 5분,10분,1시간
+        }),
+      );
+      await EncryptedStorage.setItem(
+        'refreshToken',
+        response.data.data.refreshToken,
+      );
+    } catch (error) {
+      const errorResponse = (error as AxiosError).response;
+      if (errorResponse) {
+        Alert.alert('로그인 실패', errorResponse.data.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch, loading, email, password]);
 
   const onTextInput = (naming, e) => {
-    console.log(e.nativeEvent, 'set');
     setInputText({...inputText, [naming]: e.nativeEvent.text});
   };
 
@@ -80,7 +120,7 @@ export default function SignIn({navigation}: SignInProps) {
           autoComplete="password"
           textContentType="password"
           importantForAutofill="yes"
-          keyboardType="phone-pad"
+          keyboardType="default"
           ref={passwordRef}
         />
       </View>
@@ -90,15 +130,19 @@ export default function SignIn({navigation}: SignInProps) {
               email,password의 값의 유무에 따라 스타일 변경
               스타일을 배열로 둬서 여러가지 스타일을 추가할 수 있으며 후자가 우선순위
           */}
-        <Pressable onPress={onSubmit} disabled={!canGoNext}>
-          <Text
-            style={
-              !canGoNext
-                ? styles.buttonSign
-                : [styles.buttonSign, styles.buttonSignActive]
-            }>
-            로그인
-          </Text>
+        <Pressable onPress={onSubmit} disabled={!canGoNext || loading}>
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text
+              style={
+                !canGoNext
+                  ? styles.buttonSign
+                  : [styles.buttonSign, styles.buttonSignActive]
+              }>
+              로그인
+            </Text>
+          )}
         </Pressable>
         <Pressable onPress={onSubmit}>
           <Text style={styles.buttonSignUp} onPress={goSignUp}>
