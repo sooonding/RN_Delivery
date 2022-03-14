@@ -26,7 +26,8 @@
     "react-native-screens": "^3.13.0",
     "react-redux": "^7.2.6",
     "redux-flipper": "^2.0.1",
-    "rn-aync-storage-flipper": "github:react-native-async-storage/async-storage"
+    "rn-aync-storage-flipper": "github:react-native-async-storage/async-storage",
+    "socket.io-client": "^4.4.1"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9",
