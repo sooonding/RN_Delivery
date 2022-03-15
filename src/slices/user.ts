@@ -1,11 +1,20 @@
-import {createSlice} from '@reduxjs/toolkit';
+import {createSlice, PayloadAction} from '@reduxjs/toolkit';
+
+interface InitalState {
+  name: string;
+  email: string;
+  accessToken: string;
+  refreshToken: string;
+  money: number;
+}
 
 //NOTE: globalState,전역 상태라고 보면 된다.
-const initialState = {
+const initialState: InitalState = {
   name: '',
   email: '',
   accessToken: '',
   refreshToken: '',
+  money: 0,
 };
 
 const userSlice = createSlice({
@@ -20,6 +29,9 @@ const userSlice = createSlice({
     },
     setName(state, action) {
       state.name = action.payload;
+    },
+    setMoney(state, action: PayloadAction<number>) {
+      state.money = action.payload;
     },
   },
   extraReducers: builder => {},
