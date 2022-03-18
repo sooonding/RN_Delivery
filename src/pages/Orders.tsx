@@ -1,48 +1,29 @@
-import {Text, SafeAreaView, Pressable, StyleSheet, View} from 'react-native';
+import {View, FlatList} from 'react-native';
 import React, {useCallback} from 'react';
 import {useAppDispatch} from '../store';
-import orderSlice from '../slices/order';
 import {useSelector} from 'react-redux';
 import {RootState} from '../store/reducer';
+import EachOrder from '../components/EachOrder';
+import {Order} from '../slices/order';
 
 export default function Orders() {
-  const dispatch = useAppDispatch();
-  const selector = useSelector((state: RootState) => {
+  const orders = useSelector((state: RootState) => {
     return state.order.orders;
   });
 
+  const orderListItem = useCallback(({item}: {item: Order}) => {
+    console.log(item, 'item');
+    return <EachOrder item={item} />;
+  }, []);
+
   return (
-    <SafeAreaView>
-      {/* {selector && selector ? (
-        selector.map(el => {
-          const {orderId} = el;
-          return (
-            <View>
-              <Text>{orderId}</Text>
-            </View>
-          );
-        })
-      ) : (
-        <View>
-          <Text>order 내용이 없습니다.</Text>
-        </View>
-      )} */}
-      <Text>Orders</Text>
-    </SafeAreaView>
+    <View>
+      <FlatList
+        //NOTE: FlatList는 자체적인 반복문이 있다.
+        data={orders}
+        keyExtractor={item => item.orderId}
+        renderItem={orderListItem}
+      />
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  orderWrapper: {
-    alignItems: 'center',
-  },
-  orderButton: {
-    backgroundColor: 'red',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  orderText: {
-    color: 'white',
-  },
-});

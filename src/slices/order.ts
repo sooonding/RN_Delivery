@@ -37,28 +37,19 @@ const orderSlice = createSlice({
       state.orders.push(action.payload);
     },
     acceptOrder(state, action: PayloadAction<string>) {
-      // const filterId = state.orders.filter(el => el.orderId === action.payload);
-      // state.deliveries.push(...filterId);
-      // state.orders.
-      const filterIndex = state.orders.findIndex(
-        el => el.orderId === action.payload,
-      );
+      const filterIndex = state.orders.findIndex(el => el.orderId === action.payload);
       // NOTE 값이 없다면 -1을 반환하니 아니니까 해당 값이 있다라는 내용이 성립된다.
       if (filterIndex > -1) {
         state.deliveries.push(state.orders[filterIndex]);
         state.orders.splice(filterIndex, 1);
       }
     },
-    rejectOrder(state, action) {
-      const rejectOrderId = state.orders.findIndex(
-        el => el.orderId === action.payload,
-      );
+    rejectOrder(state, action: PayloadAction<string>) {
+      const rejectOrderId = state.orders.findIndex(el => el.orderId === action.payload);
       if (rejectOrderId > -1) {
         state.orders.splice(rejectOrderId, 1);
       }
-      const rejectDeliveryId = state.deliveries.findIndex(
-        el => el.orderId === action.payload,
-      );
+      const rejectDeliveryId = state.deliveries.findIndex(el => el.orderId === action.payload);
       if (rejectDeliveryId > -1) {
         state.deliveries.splice(rejectDeliveryId, 1);
       }

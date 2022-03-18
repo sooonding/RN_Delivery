@@ -36,7 +36,6 @@ export default function AppInner() {
   useEffect(() => {
     //NOTE flow: 서버로부터 데이터를 받으면(socket.on) 그 데이터를 dispatch
     const callbackHello = (data: any) => {
-      console.log(data, 'DATAAAA'); // 주문데이터
       dispatch(orderSlice.actions.addOrder(data));
     };
     if (socket && isLoggedIn) {
@@ -54,11 +53,10 @@ export default function AppInner() {
         socket.off('order', callbackHello);
       }
     };
-  }, [isLoggedIn, socket]);
+  }, [isLoggedIn, socket, dispatch]);
 
   useEffect(() => {
     if (!isLoggedIn) {
-      console.log('!isLogged', !isLoggedIn);
       disconnect();
     }
   }, [isLoggedIn, disconnect]);
@@ -100,29 +98,47 @@ export default function AppInner() {
     getTokenAndRefresh();
   }, [dispatch]);
 
+  useEffect(() => {
+    /* NOTE
+    request use 는 요청을 보낼 떄
+    - 보통 로컬 스토리지나 리플레쉬토큰을 가져올 때
+    */
 
-  // useEffect(() => {
-  //   const callback = (data: any) => {
-  //     console.log(data);
-  //     dispatch(orderSlice.actions.addOrder(data));
-  //   };
-  //   if (socket && isLoggedIn) {
-  //     socket.emit('acceptOrder', 'hello');
-  //     socket.on('order', callback);
-  //   }
-  //   return () => {
-  //     if (socket) {
-  //       socket.off('order', callback);
-  //     }
-  //   };
-  // }, [dispatch, isLoggedIn, socket]);
+    /* 첫번째 인자는:성공 두번째는:에러 */
+    axios.interceptors.response.use(
+      response => {
+        return response;
+      },
+      async error => {
+        //NOTE 419에러 이후 다시 accept에 대한 요청을 보내야 하는데 원래의 요청에 대한 정보는 error.config에 있다.
 
-  // useEffect(() => {
-  //   if (!isLoggedIn) {
-  //     console.log('!isLoggedIn', !isLoggedIn);
-  //     disconnect();
-  //   }
-  // }, [isLoggedIn, disconnect]);
+        const {
+          config,
+          response: {status},
+        } = error;
+
+        if (status === 419) {
+          if (error.response.data.code === 'expired') {
+            const originRequest = config;
+            const refreshToken = await EncryptedStorage.getItem('refreshToken');
+            // 토큰 refresh 요청
+            const {data} = await axios.post(
+              `${Config.API_URL}/refreshToken`,
+              {},
+              {headers: {authorization: `Bearer ${refreshToken}`}},
+            );
+            //NOTE: 새로운 토큰을 저장하기 위한 로직
+            dispatch(userSlice.actions.setToken(data.data.accessToken));
+            //NOTE: 원래의 요청에 헤더의 값을 현재 받아온 데이터의 토큰으로 변경
+            originRequest.headers.authorization = `Bearer ${data.data.accessToken}`;
+            return axios(originRequest);
+          }
+        }
+        //NOTE: 419에러 이외의 에러처리
+        return Promise.reject(error);
+      },
+    );
+  }, [dispatch]);
 
   return (
     <NavigationContainer>
