@@ -33,6 +33,9 @@ const userSlice = createSlice({
     setMoney(state, action: PayloadAction<number>) {
       state.money = action.payload;
     },
+    setToken(state, action: PayloadAction<string>) {
+      state.accessToken = action.payload;
+    },
   },
   extraReducers: builder => {},
 });

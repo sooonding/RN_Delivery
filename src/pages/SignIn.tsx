@@ -56,7 +56,7 @@ export default function SignIn({navigation}: SignInProps) {
         email,
         password,
       });
-      console.log(response.data, 'RESPONSE_DATA');
+
       Alert.alert('로그인', '로그인 되었습니다.');
       dispatch(
         userSlice.actions.setUser({
