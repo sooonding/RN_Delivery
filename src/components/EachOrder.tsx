@@ -1,4 +1,11 @@
-import {View, Text, Pressable, StyleSheet, Alert} from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Alert,
+  Dimensions,
+} from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import orderSlice, {Order} from '../slices/order';
 import {useDispatch, useSelector} from 'react-redux';
@@ -8,6 +15,7 @@ import Config from 'react-native-config';
 import {RootState} from '../store/reducer';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {LoggedInParamList} from '../../App';
+import NaverMapView, {Marker, Path, Polyline} from 'react-native-nmap';
 
 interface Props {
   item: Order;
@@ -23,6 +31,8 @@ const EachOrder = ({item}: Props) => {
   const toggleDetail = useCallback(() => {
     setDetail(prev => !prev);
   }, []);
+
+  const {start, end} = item;
 
   const orderAccept = useCallback(async () => {
     if (!accessToken) {
@@ -69,14 +79,69 @@ const EachOrder = ({item}: Props) => {
         <Text style={styles.orderButtonText}>
           {item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원
         </Text>
+        <Text>압구정</Text>
         <Text>왕십리</Text>
-        <Text>삼성동</Text>
       </Pressable>
       {/* NOTE: 상세보기를 위한 로직 */}
       {detail ? (
         <View>
           <View>
-            <Text>네이버맵이 들어갈 장소</Text>
+            {/* 
+            NOTE: 네이버맵이 들어갈 장소 
+            Dimensions은 화면 너비를 구하기 위해서 사용
+            */}
+            <View
+              style={{
+                width: Dimensions.get('window').width - 30,
+                height: 200,
+                marginTop: 10,
+              }}>
+              <NaverMapView
+                style={{width: '100%', height: '100%'}}
+                zoomControl={false}
+                center={{
+                  zoom: 10,
+                  tilt: 50,
+                  latitude: (start.latitude + end.latitude) / 2,
+                  longitude: (start.longitude + end.longitude) / 2,
+                }}>
+                <Marker
+                  coordinate={{
+                    latitude: start.latitude,
+                    longitude: start.longitude,
+                  }}
+                  pinColor="red"
+                />
+                <Path
+                  width={5}
+                  outlineColor="white"
+                  color="pink"
+                  coordinates={[
+                    {
+                      latitude: start.latitude,
+                      longitude: start.longitude,
+                    },
+                    {latitude: end.latitude, longitude: end.longitude},
+                  ]}
+                />
+                <Polyline
+                  coordinates={[
+                    {
+                      latitude: start.latitude,
+                      longitude: start.longitude,
+                    },
+                    {latitude: end.latitude, longitude: end.longitude},
+                  ]}
+                  strokeColor="blue"
+                />
+                <Marker
+                  coordinate={{
+                    latitude: end.latitude,
+                    longitude: end.longitude,
+                  }}
+                />
+              </NaverMapView>
+            </View>
           </View>
           <View style={styles.buttonWrapper}>
             <Pressable
