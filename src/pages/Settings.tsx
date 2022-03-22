@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect} from 'react';
-import {Alert, Pressable, StyleSheet, Text, View} from 'react-native';
+import {Alert, Platform, Pressable, StyleSheet, Text, View} from 'react-native';
 import axios, {AxiosError} from 'axios';
 import Config from 'react-native-config';
 import {useAppDispatch} from '../store';
@@ -18,7 +18,7 @@ function Settings() {
   const onLogout = useCallback(async () => {
     try {
       await axios.post(
-        `${Config.API_URL}/logout`,
+        `${Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL}/logout`,
         {},
         {
           headers: {
@@ -45,7 +45,9 @@ function Settings() {
     const getMoney = async () => {
       try {
         const response = await axios.get<{data: number}>(
-          `${Config.API_URL}/showmethemoney`,
+          `${
+            Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
+          }/showmethemoney`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,

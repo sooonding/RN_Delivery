@@ -6,6 +6,7 @@ import {
   Alert,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
@@ -50,13 +51,16 @@ export default function SignIn({navigation}: SignInProps) {
       return Alert.alert('경고!', '비밀번호를 입력하세요!');
     }
     try {
-      console.log(email, password);
+      console.log(email, password, 'login try!');
       setLoading(true);
-      const response = await axios.post(`${Config.API_URL}/login`, {
-        email,
-        password,
-      });
-
+      const response = await axios.post(
+        `${Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL}/login`,
+        {
+          email,
+          password,
+        },
+      );
+      console.log(response, 'RESPONSE');
       Alert.alert('로그인', '로그인 되었습니다.');
       dispatch(
         userSlice.actions.setUser({

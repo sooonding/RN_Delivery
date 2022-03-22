@@ -9,10 +9,11 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
+      android:usesCleartextTraffic="true"
       android:theme="@style/AppTheme">
         <meta-data
           android:name="com.naver.maps.map.CLIENT_ID"
-          android:value="c5i0qvf959" />
+          android:value="dz34v2hyii" />
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

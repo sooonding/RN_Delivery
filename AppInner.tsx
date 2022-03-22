@@ -1,4 +1,4 @@
-import {View, Text, Alert} from 'react-native';
+import {View, Text, Alert, Platform} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
@@ -71,7 +71,9 @@ export default function AppInner() {
           return;
         }
         const response = await axios.post(
-          `${Config.API_URL}/refreshToken`,
+          `${
+            Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
+          }/refreshToken`,
           {},
           {
             headers: {
@@ -123,7 +125,9 @@ export default function AppInner() {
             const refreshToken = await EncryptedStorage.getItem('refreshToken');
             // 토큰 refresh 요청
             const {data} = await axios.post(
-              `${Config.API_URL}/refreshToken`,
+              `${
+                Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
+              }/refreshToken`,
               {},
               {headers: {authorization: `Bearer ${refreshToken}`}},
             );

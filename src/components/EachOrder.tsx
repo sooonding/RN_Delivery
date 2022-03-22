@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Alert,
   Dimensions,
+  Platform,
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from 'react';
 import orderSlice, {Order} from '../slices/order';
@@ -16,6 +17,7 @@ import {RootState} from '../store/reducer';
 import {NavigationProp, useNavigation} from '@react-navigation/native';
 import {LoggedInParamList} from '../../App';
 import NaverMapView, {Marker, Path, Polyline} from 'react-native-nmap';
+import getDistanceFromLatLonInKm from '../utils';
 
 interface Props {
   item: Order;
@@ -41,7 +43,7 @@ const EachOrder = ({item}: Props) => {
     //NOTE: 이미 수락이 된 경우도 있으니 서버 확인을 해준다.
     try {
       await axios.post(
-        `${Config.API_URL}/accept`,
+        `${Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL}/accept`,
         {
           orderId: item.orderId,
         },
@@ -79,6 +81,15 @@ const EachOrder = ({item}: Props) => {
         <Text style={styles.orderButtonText}>
           {item.price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}원
         </Text>
+        <Text style={styles.orderButtonText}>
+          {getDistanceFromLatLonInKm(
+            start.latitude,
+            start.longitude,
+            end.latitude,
+            end.longitude,
+          ).toFixed(1)}
+          Km
+        </Text>
         <Text>압구정</Text>
         <Text>왕십리</Text>
       </Pressable>
@@ -98,7 +109,7 @@ const EachOrder = ({item}: Props) => {
               }}>
               <NaverMapView
                 style={{width: '100%', height: '100%'}}
-                zoomControl={false}
+                zoomControl={true}
                 center={{
                   zoom: 10,
                   tilt: 50,

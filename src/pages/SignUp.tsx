@@ -57,6 +57,7 @@ function SignUp({navigation}: SignUpScreenProps) {
   */
 
   const onSubmit = useCallback(async () => {
+    console.log('회원가입 로직-');
     //NOTE: 로딩중인데 한번 더 누르면 return하는 로직
     if (loading) {
       return;
@@ -91,11 +92,14 @@ function SignUp({navigation}: SignUpScreenProps) {
       console.log('signUp');
       setLoading(true);
       console.log(Config.API_URL, 'CONFIG주소');
-      const response = await axios.post(`${Config.API_URL}/user`, {
-        email,
-        name,
-        password,
-      });
+      const response = await axios.post(
+        `${Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL}/user`,
+        {
+          email,
+          name,
+          password,
+        },
+      );
       console.log(email, name, password, '회원가입정보');
       console.log(response, 'response');
       Alert.alert('성공!', '회원가입이 완료되었습니다.');
