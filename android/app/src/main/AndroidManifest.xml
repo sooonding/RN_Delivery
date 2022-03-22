@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  package="com.fooddelivery">
+  package="com.sooonding.fooddelivery">
 
     <uses-permission android:name="android.permission.INTERNET" />
 
@@ -9,7 +9,11 @@
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher_round"
       android:allowBackup="false"
+      android:usesCleartextTraffic="true"
       android:theme="@style/AppTheme">
+        <meta-data
+          android:name="com.naver.maps.map.CLIENT_ID"
+          android:value="dz34v2hyii" />
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"

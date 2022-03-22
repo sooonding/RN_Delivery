@@ -1,6 +1,7 @@
 import {Config} from 'react-native-config';
 import {useCallback} from 'react';
 import {io, Socket} from 'socket.io-client';
+import {Platform} from 'react-native';
 
 let socket: Socket | undefined;
 //NOTE: () => void는 disconnect의 함수에 대한 타입 리턴값이 없으면 undefined니까 void로 타입지정
@@ -13,9 +14,12 @@ const useSocket = (): [Socket | undefined, () => void] => {
     }
   }, []);
   if (!socket) {
-    socket = io(`${Config.API_URL}`, {
-      transports: ['websocket'],
-    });
+    socket = io(
+      `${Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL}`,
+      {
+        transports: ['websocket'],
+      },
+    );
   }
 
   return [socket, disconnect];
