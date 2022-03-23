@@ -43,23 +43,17 @@ function Settings() {
 
   useEffect(() => {
     const getMoney = async () => {
-      try {
-        const response = await axios.get<{data: number}>(
-          `${
-            Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
-          }/showmethemoney`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+      const response = await axios.get<{data: number}>(
+        `${
+          Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
+        }/showmethemoney`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
           },
-        );
-        dispatch(userSlice.actions.setMoney(response.data.data));
-      } catch (e) {
-        console.log(e);
-      } finally {
-        console.log('finally');
-      }
+        },
+      );
+      dispatch(userSlice.actions.setMoney(response.data.data));
     };
     getMoney();
   }, [dispatch, accessToken]);

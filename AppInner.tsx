@@ -19,6 +19,7 @@ import axios, {AxiosError} from 'axios';
 import Config from 'react-native-config';
 import userSlice from './src/slices/user';
 import orderSlice from './src/slices/order';
+import usePermissions from './src/hooks/usePermissions';
 
 export default function AppInner() {
   const isLoggedIn = useSelector((state: RootState) => {
@@ -39,7 +40,6 @@ export default function AppInner() {
       dispatch(orderSlice.actions.addOrder(data));
     };
     if (socket && isLoggedIn) {
-      console.log(socket);
       /*
       NOTE: 서버에게 데이터를 보내는게 emit / 서버에서 데이터를 받는게 on / 서버에서 받는걸 끊는게 off
       emit login을 해야만 on을 할 수 있는 flow
@@ -60,6 +60,9 @@ export default function AppInner() {
       disconnect();
     }
   }, [isLoggedIn, disconnect]);
+
+  //NOTE: 앱 권한 설정을 위한 커스텀 함수 로직
+  usePermissions();
 
   //NOTE: 앱 실행 시 토큰 있으면 로그인하는 코드
   useEffect(() => {
