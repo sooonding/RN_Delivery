@@ -24,15 +24,13 @@ interface Props {
 }
 
 const EachOrder = ({item}: Props) => {
+  const navigation = useNavigation<NavigationProp<LoggedInParamList>>();
+  const dispatch = useAppDispatch();
   const [detail, setDetail] = useState(false);
   const [loading, setLoading] = useState(false);
-  const dispatch = useAppDispatch();
-  const navigation = useNavigation<NavigationProp<LoggedInParamList>>();
+
   //NOTE: 로그인 이후에는 accessToken을 가져와서 헤더에 넣어줘야 한다.
   const accessToken = useSelector((state: RootState) => state.user.accessToken);
-  const toggleDetail = useCallback(() => {
-    setDetail(prev => !prev);
-  }, []);
 
   const {start, end} = item;
 
@@ -58,7 +56,7 @@ const EachOrder = ({item}: Props) => {
       navigation.navigate('Delivery');
     } catch (e) {
       let errorResponse = (e as AxiosError).response;
-      console.log(errorResponse, 'errorResponseerrorResponse');
+
       if (errorResponse?.status === 400) {
         //NOTE: 다른사람이 했다라면 에러
         Alert.alert('실패', errorResponse.data.message);
@@ -75,6 +73,10 @@ const EachOrder = ({item}: Props) => {
     dispatch(orderSlice.actions.rejectOrder(item.orderId));
   }, [dispatch, item]);
 
+  const toggleDetail = useCallback(() => {
+    setDetail(prev => !prev);
+  }, []);
+
   return (
     <View style={styles.orderContainer}>
       <Pressable style={styles.orderButton} onPress={toggleDetail}>
@@ -90,11 +92,9 @@ const EachOrder = ({item}: Props) => {
           ).toFixed(1)}
           Km
         </Text>
-        <Text>압구정</Text>
-        <Text>왕십리</Text>
       </Pressable>
       {/* NOTE: 상세보기를 위한 로직 */}
-      {detail ? (
+      {detail && (
         <View>
           <View>
             {/* 
@@ -166,7 +166,7 @@ const EachOrder = ({item}: Props) => {
             </Pressable>
           </View>
         </View>
-      ) : null}
+      )}
     </View>
   );
 };

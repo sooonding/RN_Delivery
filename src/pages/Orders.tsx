@@ -7,12 +7,9 @@ import EachOrder from '../components/EachOrder';
 import {Order} from '../slices/order';
 
 export default function Orders() {
-  const orders = useSelector((state: RootState) => {
-    return state.order.orders;
-  });
+  const orders = useSelector((state: RootState) => state.order.orders);
 
   const orderListItem = useCallback(({item}: {item: Order}) => {
-    console.log(item, 'item');
     return <EachOrder item={item} />;
   }, []);
 

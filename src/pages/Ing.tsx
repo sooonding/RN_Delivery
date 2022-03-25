@@ -6,11 +6,11 @@ import {RootState} from '../store/reducer';
 import Geolocation from '@react-native-community/geolocation';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {LoggedInParamList} from '../../App';
-import {instanceOf} from 'prop-types';
 
 type IngScreenProps = NativeStackScreenProps<LoggedInParamList, 'Delivery'>;
 
 function Ing({navigation}: IngScreenProps) {
+  console.log('딜리버리로 이동');
   console.dir(navigation);
   const deliveries = useSelector((state: RootState) => state.order.deliveries);
   const [myPosition, setMyPosition] = useState<{

@@ -2,6 +2,7 @@ import {
   Alert,
   Dimensions,
   Image,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -21,6 +22,11 @@ import {RootState} from '../store/reducer';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import ImageResizer from 'react-native-image-resizer';
 import ImagePicker from 'react-native-image-crop-picker';
+import axios, {AxiosError} from 'axios';
+import Config from 'react-native-config';
+import orderSlice from '../slices/order';
+
+//TODO disable랑 로딩 로직 짜기
 
 export default function Complete() {
   const dispatch = useAppDispatch();
@@ -33,20 +39,18 @@ export default function Complete() {
   const orderId = route.params?.orderId;
 
   const onResponse = useCallback(async response => {
-    console.log(response.width, response.height, response.exif, 'OPEN');
     setPreview({uri: `data:${response.mime};base64,${response.data}`});
+    //exif의Orientation은 핸드폰을 어떤 방향에서 찍었는가
     const orientation = (response.exif as any)?.Orientation;
-    console.log('orientation', orientation);
+
     return ImageResizer.createResizedImage(
-      response.path,
+      response.path, // 파일의 경로(실제 파일 경로)
       600,
       600,
       response.mime.includes('jpeg') ? 'JPEG' : 'PNG',
       100,
       0,
     ).then(r => {
-      console.log(r.uri, r.name);
-
       setImage({
         uri: r.uri,
         name: r.name,
@@ -79,6 +83,45 @@ export default function Complete() {
       .catch(console.log);
   }, [onResponse]);
 
+  /* NOTE: web에서는 img src='경로', native에서는 source={{uri: '경로'}}
+   */
+
+  const onComplete = useCallback(async () => {
+    if (!image) {
+      Alert.alert('경고', '이미지가 없습니다. 이미지를 업로드해주세요');
+      return;
+    }
+    if (!orderId) {
+      Alert.alert('알림', '유효한 주문이 아닙니다.');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('orderId', orderId);
+    try {
+      await axios.post(
+        `${
+          Platform.OS === 'android' ? Config.API_URL : Config.IOS_URL
+        }/complete`,
+        formData,
+        {
+          headers: {authorization: `Bearer ${accessToken}`},
+        },
+      );
+      Alert.alert('완료', '완료처리 되었습니다.');
+      //NOTE: 바로 navigate를 이용하여 화면으로 이동하지 않고 뒤로 가는 이유는?
+      // => 뒤로가는걸 해주지 않으면 완료된 화면이 유지되서 (완료 화면을 없애기 위함)
+      navigation.goBack();
+      navigation.navigate('Settings');
+      dispatch(orderSlice.actions.rejectOrder(orderId));
+    } catch (e) {
+      const errorResponse = (e as AxiosError).response;
+      if (errorResponse) {
+        Alert.alert('알림', errorResponse.data.message);
+      }
+    }
+  }, [orderId, image, navigation, dispatch, accessToken]);
+
   return (
     <SafeAreaView>
       <View style={styles.orderId}>
@@ -99,7 +142,8 @@ export default function Complete() {
             image
               ? styles.button
               : StyleSheet.compose(styles.button, styles.buttonDisabled)
-          }>
+          }
+          onPress={onComplete}>
           <Text style={styles.buttonText}>완료</Text>
         </Pressable>
       </View>
